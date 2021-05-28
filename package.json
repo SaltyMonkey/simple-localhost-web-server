@@ -1,0 +1,27 @@
+{
+  "name": "simple-localhost-web-server",
+  "version": "1.0.0",
+  "description": "",
+  "main": "index.js",
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/SaltyMonkey/simple-localhost-web-server.git"
+  },
+  "author": "SaltyMonkey",
+  "license": "MIT",
+  "bugs": {
+    "url": "https://github.com/SaltyMonkey/simple-localhost-web-server/issues"
+  },
+  "homepage": "https://github.com/SaltyMonkey/simple-localhost-web-server#readme",
+  "devDependencies": {
+    "@babel/eslint-parser": "^7.14.3",
+    "eslint": "^7.27.0",
+    "eslint-plugin-unicorn": "^32.0.1"
+  },
+  "dependencies": {
+    "find-my-way": "^4.1.0"
+  }
+}
