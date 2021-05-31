@@ -6,7 +6,7 @@ const path = require("path");
 const url = require("url");
 
 const LOCALHOST = "127.0.0.1";
-const FAILED_RESPONSE_CONTENT_TYPE = "text/plain";
+const FAILED_RESPONSE_CONTENT_TYPE = "application/json";
 const STATIC_FILE_RESPONSE_CONTENT_TYPE = "application/octet-stream";
 
 const isPathWithoutInvalidCharacters = (parametersPath) => {
@@ -27,13 +27,13 @@ const isPathInBaseFolderBound = (parametersPath, filesBasePath) => {
 const internalServerErrorHandler = (_request, response) => {
 	response.statusCode = 500;
 	response.setHeader("Content-Type", FAILED_RESPONSE_CONTENT_TYPE);
-	response.end(http.STATUS_CODES[500]);
+	response.end({ code: 500, message: http.STATUS_CODES[500]});
 };
 
 const forbiddenErrorHandler = (_request, response) => {
 	response.statusCode = 403;
 	response.setHeader("Content-Type", FAILED_RESPONSE_CONTENT_TYPE);
-	response.end(http.STATUS_CODES[403]);
+	response.end({ code: 403, message: http.STATUS_CODES[403]});
 };
 
 class LocalhostServer {
@@ -51,12 +51,12 @@ class LocalhostServer {
 			defaultRoute: (_request, response) => {
 				response.statusCode = 404;
 				response.setHeader("Content-Type", FAILED_RESPONSE_CONTENT_TYPE);
-				response.end(http.STATUS_CODES[404]);
+				response.end({ code: 404, message: http.STATUS_CODES[404]});
 			},
 			onBadUrl: (_path, _request, response) => {
 				response.statusCode = 403;
 				response.setHeader("Content-Type", FAILED_RESPONSE_CONTENT_TYPE);
-				response.end(http.STATUS_CODES[403]);
+				response.end({ code: 403, message: http.STATUS_CODES[403]});
 			}
 		});
 	}
