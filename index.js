@@ -6,7 +6,7 @@ const path = require("path");
 const url = require("url");
 
 const LOCALHOST = "127.0.0.1";
-const FAILED_RESPONSE_CONTENT_TYPE = "application/json";
+const BASIC_RESPONSE_CONTENT_TYPE = "application/json";
 const STATIC_FILE_RESPONSE_CONTENT_TYPE = "application/octet-stream";
 
 const isPathWithoutInvalidCharacters = (parametersPath) => {
@@ -26,19 +26,19 @@ const isPathInBaseFolderBound = (parametersPath, filesBasePath) => {
 
 const internalServerErrorHandler = (_request, response) => {
 	response.statusCode = 500;
-	response.setHeader("Content-Type", FAILED_RESPONSE_CONTENT_TYPE);
-	response.end({ code: 500, message: http.STATUS_CODES[500]});
+	response.setHeader("Content-Type", BASIC_RESPONSE_CONTENT_TYPE);
+	response.end("{ code: 500, message: http.STATUS_CODES[500]}");
 };
 
 const forbiddenErrorHandler = (_request, response) => {
 	response.statusCode = 403;
-	response.setHeader("Content-Type", FAILED_RESPONSE_CONTENT_TYPE);
-	response.end({ code: 403, message: http.STATUS_CODES[403]});
+	response.setHeader("Content-Type", BASIC_RESPONSE_CONTENT_TYPE);
+	response.end("{ code: 403, message: http.STATUS_CODES[403]}");
 };
 
 class LocalhostServer {
 	// eslint-disable-next-line unicorn/prevent-abbreviations
-	constructor(port, maxParamLength = 600, caseSensitive = true, debugMode = false) {
+	constructor(port, maxParamLength = 600, caseSensitive = true, debugMode = false, corsAllowAll = false) {
 		if(!port) throw new Error("Invalid port");
 		
 		this._httpServer = null;
@@ -50,15 +50,25 @@ class LocalhostServer {
 			caseSensitive,
 			defaultRoute: (_request, response) => {
 				response.statusCode = 404;
-				response.setHeader("Content-Type", FAILED_RESPONSE_CONTENT_TYPE);
-				response.end({ code: 404, message: http.STATUS_CODES[404]});
+				response.setHeader("Content-Type", BASIC_RESPONSE_CONTENT_TYPE);
+				response.end("{ code: 404, message: http.STATUS_CODES[404]}");
 			},
 			onBadUrl: (_path, _request, response) => {
 				response.statusCode = 403;
-				response.setHeader("Content-Type", FAILED_RESPONSE_CONTENT_TYPE);
-				response.end({ code: 403, message: http.STATUS_CODES[403]});
+				response.setHeader("Content-Type", BASIC_RESPONSE_CONTENT_TYPE);
+				response.end("{ code: 403, message: http.STATUS_CODES[403]}");
 			}
 		});
+
+		if(corsAllowAll) {
+			this._router.on("OPTIONS", "*", (request, response) => {
+				response.setHeader("Access-Control-Allow-Origin", "*");
+				response.setHeader("Access-Control-Allow-Methods", "POST, GET");
+				response.setHeader("Access-Control-Max-Age", "86400");
+				response.statusCode = 204;
+				response.end();
+			});
+		}
 	}
 
 	serveFolder(route, folderFullPath) {
@@ -89,18 +99,17 @@ class LocalhostServer {
 		});
 	}
 
-	serveCustomCallbackRoute(method, route, callback, isReturnData) {
+	serveCustomCallbackRoute(method, route, callback) {
 		this._router.on(method.toUpperCase(), route, (request, response, parameters) => {
 			if(this._debug) console.log(`Date: ${Date.now()}`, `path:${request.url}`);
 			try {
-				if(isReturnData) {
-				
-					const data = callback(parameters, (new url.URL(`http://${LOCALHOST}${request.path}`)).searchParams);
+				const data = callback(parameters, (new url.URL(`http://${LOCALHOST}${request.path}`)).searchParams);
+				if(data) { 
 					response.statusCode = 200;
-					response.end(data);
+					response.setHeader("Content-Type", BASIC_RESPONSE_CONTENT_TYPE);
+					response.end(JSON.stringify(data));
 				}
 				else {
-					callback(parameters, (new url.URL(`http://${LOCALHOST}${request.path}`)).searchParams);
 					response.statusCode = 204;
 					response.end();
 				}
