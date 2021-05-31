@@ -63,7 +63,7 @@ class LocalhostServer {
 
 	serveFolder(route, folderFullPath) {
 		let routeOpt = route;
-		if(typeof routeOpt !== "string" || routeOpt.length === 0 || routeOpt === "/*" || routeOpt === "/" || routeOpt === "*" || !isPathWithoutInvalidCharacters(routeOpt)) throw new Error("invalid route path");
+		if(typeof routeOpt !== "string" || routeOpt.length === 0 || routeOpt === "*" || !isPathWithoutInvalidCharacters(routeOpt)) throw new Error("invalid route path");
 		if(typeof folderFullPath !== "string" || !path.isAbsolute(folderFullPath)) throw new Error("invalid folder path");
 		if(!routeOpt.endsWith("/*")) routeOpt = `${routeOpt}/*`;
 		
@@ -109,7 +109,11 @@ class LocalhostServer {
 			}
 		});
 	}
-
+	
+	serveRawRoute(method, route, callback) {
+		this._router.on(method.toUpperCase(), route, callback);
+	}
+	
 	async start() {
 		if(this._httpServer && this._httpServer.listening) throw new Error("Already listening");
 
